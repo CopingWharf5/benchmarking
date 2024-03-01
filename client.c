@@ -50,7 +50,7 @@ int main(int argc, char *argv[]) {
     struct timespec end_time;
     struct timespec total_start, total_end;
     float total_time = 0.0;
-    for (int j = 0; j < msg_size; j++) {
+    for (int j = sizeof(struct timespec); j < msg_size+ sizeof(struct timespec); j++) {
         msg[j] = 'A'; 
     }
     clock_gettime(CLOCK_REALTIME, &total_start);
