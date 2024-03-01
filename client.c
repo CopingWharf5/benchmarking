@@ -1,7 +1,9 @@
 #include <stdio.h>
+#include <arpa/inet.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include <sys/time.h>
+#include <time.h>
+#include <string.h>
 #include <sys/socket.h>
 
 int main(int argc, char *argv[]) {
@@ -42,14 +44,14 @@ int main(int argc, char *argv[]) {
     }
 
     // Send messages
-    char msg[msg_size];
+    char msg[msg_size + sizeof(struct timespec)];
     char recv_msg[sizeof(struct timespec)];
     struct timespec start_time;
     struct timespec end_time;
     struct timespec total_start, total_end;
     float total_time = 0.0;
     for (int j = 0; j < msg_size; j++) {
-        msg[j] = 'A';
+        msg[j] = 'A'; 
     }
     clock_gettime(CLOCK_REALTIME, &total_start);
 
@@ -63,14 +65,14 @@ int main(int argc, char *argv[]) {
             break;
         else {
             clock_gettime(CLOCK_REALTIME, &end_time);
-            latency[i] = float((end_time.tv_sec - start_time.tv_sec) * 1000) + (end_time.tv_nsec - start_time.tv_nsec) / 1000000.0;
+            latency[i] = (float) ((end_time.tv_sec - start_time.tv_sec) * 1000) + (end_time.tv_nsec - start_time.tv_nsec) / 1000000.0;
             sum += latency[i];
         }
     }
     clock_gettime(CLOCK_REALTIME, &total_end);
-    total_time = float((total_end.tv_sec - total_start.tv_sec) * 1000) + (total_end.tv_nsec - total_start.tv_nsec) / 1000000.0;
+    total_time = (float) ((total_end.tv_sec - total_start.tv_sec) * 1000) + (total_end.tv_nsec - total_start.tv_nsec) / 1000000.0;
 
-    printf("Average latency: %f ms\n", sum / msg_count);
+    printf("Average latency: %f ms\n", (float) (sum / msg_count));
     printf("Total time: %f ms\n", total_time);
     printf("Throughput: %f MB/s\n", ((bytes_sent / 1000000) / total_time)  * 1000);
 
