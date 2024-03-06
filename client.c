@@ -61,7 +61,7 @@ int main(int argc, char *argv[]) {
         
         send(sockfd, msg, sizeof(msg), 0);
         bytes_sent += sizeof(msg);
-        if (recv(sockfd, recv_msg, sizeof(struct timespec), 0) < 0)
+        if (recv(sockfd, recv_msg, sizeof(recv_msg), 0) < 0)
             break;
         else {
             clock_gettime(CLOCK_REALTIME, &end_time);
