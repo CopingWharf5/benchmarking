@@ -14,8 +14,9 @@ int main(int argc, char *argv[]) {
     int msg_count = atoi(argv[1]);
     int msg_size = atoi(argv[2]);
     char *addr = argv[3];
+    printf("Sending %d messages of size %d to %s\n", msg_count, msg_size, addr);
     int status = 0;
-    int sum = 0;
+    float sum = 0;
     long bytes_sent = 0;
     float latency[msg_count];
 
@@ -61,21 +62,28 @@ int main(int argc, char *argv[]) {
         
         send(sockfd, msg, sizeof(msg), 0);
         bytes_sent += sizeof(msg);
-        if (recv(sockfd, recv_msg, sizeof(recv_msg), 0) < 0)
+        if (recv(sockfd, recv_msg, sizeof(recv_msg), 0) < 0) {
+            printf("Error receiving message\n");
             break;
+        }
         else {
             clock_gettime(CLOCK_REALTIME, &end_time);
-            latency[i] = (float) ((end_time.tv_sec - start_time.tv_sec) * 1000) + (end_time.tv_nsec - start_time.tv_nsec) / 1000000.0;
+            printf("%f\n", ((float) (end_time.tv_nsec - start_time.tv_nsec)) / 1000000.0);
+            latency[i] = (float) ((end_time.tv_sec - start_time.tv_sec) * 1000) + ((float) (end_time.tv_nsec - start_time.tv_nsec)) / 1000000.0;
+            printf("Latency: %f ms\n", latency[i]);
             sum += latency[i];
         }
     }
+    close(sockfd); 
     clock_gettime(CLOCK_REALTIME, &total_end);
     total_time = (float) ((total_end.tv_sec - total_start.tv_sec) * 1000) + (total_end.tv_nsec - total_start.tv_nsec) / 1000000.0;
 
+
     printf("Average latency: %f ms\n", (float) (sum / msg_count));
     printf("Total time: %f ms\n", total_time);
-    printf("Throughput: %f MB/s\n", ((bytes_sent / 1000000) / total_time)  * 1000);
+    printf("Bytes Sent: %ld\n", bytes_sent);
+    printf("Throughput: %f MB/s\n", ((float) (bytes_sent / 1000000.0) / total_time)  * 1000.0);
 
-    close(sockfd); 
+
     return 0;
 }

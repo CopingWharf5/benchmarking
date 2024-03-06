@@ -17,19 +17,22 @@ void *handle_connection(void *arg) {
     char buffer[sizeof(struct timespec)];
     printf("Reading from socket\n");
 
-    fd_set set;
-    struct timeval timeout;
+    // fd_set set;
+    // struct timeval timeout;
 
-    FD_ZERO(&set);
-    FD_SET(connection_socket, &set);
+    // FD_ZERO(&set);
+    // FD_SET(connection_socket, &set);
 
-    timeout.tv_sec = 0;
-    timeout.tv_usec = 10000;
+    // timeout.tv_sec = 0;
+    // timeout.tv_usec = 10000;
 
     int valread;
     /* Loop. Eventually kill the thread ... */ 
     while (1) {
 	valread = read(connection_socket, buffer, sizeof(buffer));
+    if (valread <= 0) {
+        break;
+    }
 	send(connection_socket, buffer, sizeof(buffer), 0);
     }
 
@@ -72,14 +75,21 @@ int main(int argc, char *argv[]) {
             printf("Max number of connections reached\n");
             break;
         }
-        int *connection_socket = malloc(sizeof(int*));
+        int *connection_socket = malloc(sizeof(int));
         *connection_socket = accept(sockfd, (struct sockaddr *)&address, &address_length);
         if (*connection_socket < 0) {
             printf("Error accepting connection\n");
             free(connection_socket);
         }
 
-        pthread_create(&threads[i], NULL, handle_connection, connection_socket);
+        int thread_status = pthread_create(&threads[i], NULL, handle_connection, connection_socket);
+        if (thread_status != 0) {
+            printf("Error creating thread\n");
+            free(connection_socket);
+        } else {
+            pthread_detach(threads[i]);
+        }
+
         i++;
     }
 
